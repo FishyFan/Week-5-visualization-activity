@@ -1,0 +1,132 @@
+---
+title: "ANA 515 ASSIGNMENT 2"
+output:
+  pdf_document: default
+  html_document: default
+Theme:
+  bootswatch: Lumen
+---
+
+#Library Setup
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(readr)
+library(dplyr)
+library(tidyverse)
+library(knitr)
+library(bslib)
+library(magrittr)
+```
+
+```{r, echo = TRUE}
+#This next chunk is inline code. Inline code puts the text with the output of the function in my document.
+#Description
+
+
+#This dataset is predominantly rooted in an article that 1057 participants responded to about their sleeping patterns while in a relationship. The goal was to measure the frequency of how often people in a relationship sleep separately and if various factors like quality of sleep or intimacy were affected by sleeping on a separate beds and measuring how many people take actions of sleeping in separate beds. The data was collected via a questionnaire online. The extract from the raw file was difficult as there were similarly named column headers and tons of data missing. so intial steps of cleaning the data such that each column had a proper name was taken and the file was saved as a csv in the local folder. The file is a comma separated text file.
+
+```
+
+#Loading Data
+
+```{r, echo = TRUE}
+sleep_csv <- read.csv("/Users/harshsanghvi/Downloads/Sleepseparate.csv")
+
+#The data was downloaded from https://github.com/fivethirtyeight/data/blob/master/sleeping-alone-data/sleeping-alone-data.csv and data cleaning was done on the csv file with all column headers realigned and approriately filled on google sheets. 
+
+```
+
+#Data Cleaning
+
+```{r, echo = TRUE}
+
+
+#Creating a custom summary for all variables and their type
+custom_glimpse <- function(sleep_csv) {
+  data.frame(
+    col_name = colnames(sleep_csv),
+    col_index = 1:ncol(sleep_csv),
+    col_class = sapply(sleep_csv, class),
+    row.names = NULL
+  )
+}
+custom_glimpse(sleep_csv)
+
+#Renaming variables
+cleansleep_csv <- sleep_csv %>% 
+       rename(StartTime = 1, EndTime = 2, TimeTaken = 3, RelationshipStatus = 4, LengthRelationship = 5, SleepSeparateFrequency = 6, TotalCountForSleepSeparate = 7, SleepSeparateSelfLocation = 8, SleepSeparateSelfLocationOther = 9, SleepSeparatePartnerLocation = 10,SleepSeparatePartnerLocationOther = 11, ReasonSnores = 12, ReasonBathroomUsage = 13, ReasonSick = 14 , ReasonNoIntimacy = 15, ReasonTempPreference = 16, ReasonFightOrArgument = 17, ReasonNotEnoughSpace = 18, ReasonNotShareCover = 19, ReasonChildNeedsParent = 20, ReasonDifferentSleepSchedules = 21, SleptSeparateFirstTime = 22, SeparateHelpedToStayTogether = 23, SeparateHelpedSleepQuality = 24, SeparateHelpedToSexLife = 25, Occupation =26 , OccupactionOther = 27, Gender = 28, Age = 29, HouseholdIncome = 30, Education = 31, Region = 32)
+custom_glimpse(cleansleep_csv)
+
+```
+
+```{r, echo = TRUE} 
+#Inline Code
+```
+This dataset has `r nrow(sleep_csv)` rows and 32 variables.
+
+
+#Column Description
+
+
+
+custom_glimpse2 <- function(description_csv) {
+  data.frame(
+    col_name = colnames(cleansleep_csv),
+    description = colnames(sleep_csv),
+    row.names = NULL
+  )
+}
+custom_glimpse2(description_csv)
+
+```
+#Subset and Exclude
+
+```{r}
+
+data_pick3 <- select(cleansleep_csv, LengthRelationship, SleepSeparateFrequency, Age)
+
+data_pick3$Age %<>% factor
+data_pick3$LengthRelationship %<>% factor
+data_pick3$SleepSeparateFrequency %<>% factor
+view(data_pick3)
+str(data_pick3$LengthRelationship)
+
+unique (data_pick3$LengthRelationship)
+unique (data_pick3$SleepSeparateFrequency)
+unique (data_pick3$Age)
+
+excludeempty_csv <- data_pick3[!(data_pick3$LengthRelationship=="" |data_pick3$SleepSeparateFrequency=="" | data_pick3$Age=="" ), ] #removing all the null Value for all 3 variables for calculation
+
+```
+
+
+#Summary
+
+```{r, include = TRUE}
+ 
+summary(data_pick3)
+summarise_all(data_pick3["SleepSeparateFrequency"], funs(nlevels(.), nmiss=sum(is.na(.))))
+summarise_all(data_pick3["LengthRelationship"], funs(nlevels(.), nmiss=sum(is.na(.))))
+summarise_all(data_pick3["Age"], funs(nlevels(.), nmiss=sum(is.na(.))))
+
+
+
+```
+
+
+## Including Plots
+
+```{R SleepSeparateFrequency-dist, echo = TRUE}
+data_pick3 %>%
+ggplot(aes(SleepSeparateFrequency)) +
+stat_count(width = 0.5)
+```
+
+```{r SleepSeparateFrequency2-dist, echo = TRUE}
+data_pick3 %>%
+ggplot(aes(fct_infreq(Age) %>% fct_rev())) +
+geom_bar() + coord_flip() +
+labs(x = "Age")
+```
